@@ -1,6 +1,6 @@
 namespace Validator.Statements;
 
-public interface IStatement
+public abstract record Statement
 {
-    
+    public abstract IEnumerable<ValidationError> Validate();
 }

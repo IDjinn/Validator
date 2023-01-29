@@ -1,3 +1,6 @@
 namespace Validator;
 
-public record ValidationError();
+public readonly record struct ValidationError(
+    string Key,
+    string? Message
+);

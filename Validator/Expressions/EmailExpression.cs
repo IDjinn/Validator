@@ -2,21 +2,36 @@ using System.Text.RegularExpressions;
 
 namespace Validator.Expressions;
 
-public partial record Email<TContract>(string? Value, Contract<TContract> Contract) where TContract:Contract<TContract>
+public partial record EmailExpression<TContract>(
+    string? Value,
+    Regex Regex,
+    string Key,
+    string Message,
+    Contract<TContract> Contract
+) : Expression
 {
+    private bool allowNullOrEmpty;
+
     [GeneratedRegex(@"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$")]
     public static partial Regex email_regex();
 
-    public Email<TContract> IsEmail(string? value, Regex regex, string key = "Email",
-        string message = "Email field should be a valid email address.")
+    public override IEnumerable<ValidationError> Validate()
     {
-        if (value is not string email || !regex.IsMatch(email))
-            _errors.Add(new ValidationError(key,message));
-        return this;
+        if (allowNullOrEmpty && string.IsNullOrEmpty(Value))
+            return Enumerable.Empty<ValidationError>();
+
+        var errors = new List<ValidationError>();
+        if (Value is null)
+            errors.Add(new ValidationError("Email", "Email is null."));
+        else if (!Regex.Match(Value).Success)
+            errors.Add(new ValidationError("Email", "Email is not valid."));
+
+        return errors;
     }
-    
-    public Email<TContract> IsEmail(string? value)
+
+    public EmailExpression<TContract> OrNullOrEmpty()
     {
-        return IsEmail(value, email_regex());
+        allowNullOrEmpty = true;
+        return this;
     }
 }

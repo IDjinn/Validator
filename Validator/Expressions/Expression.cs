@@ -1,6 +1,6 @@
 namespace Validator.Expressions;
 
-public abstract class IExpression
+public abstract partial record Expression
 {
-    public IEnumerable<ValidationError> Validate();
+    public abstract IEnumerable<ValidationError> Validate();
 }
