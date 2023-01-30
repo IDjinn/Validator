@@ -2,9 +2,9 @@ using Validator.Expressions;
 
 namespace Validator.Statements;
 
-public record OrStatement(Expression? Left) : Statement
+public record OrStatement<TContract>(Expression<TContract>? Left) : Statement
 {
-    public Expression? Right { get; set; }
+    public Expression<TContract>? Right { get; set; }
 
     public override IEnumerable<ValidationError> Validate()
     {

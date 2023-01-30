@@ -10,13 +10,8 @@ public partial record Contract<T>()
 {
     private readonly List<Contract<T>> _contracts = new();
     private readonly List<ValidationError> _errors = new();
-    private readonly List<Expression> _expressions = new();
+    private readonly List<Expression<T>> _expressions = new();
     private readonly List<Statement> _statements = new();
-
-    public IReadOnlyList<ValidationError> ValidationErrors
-    {
-        get => _errors.AsReadOnly();
-    }
 
     public bool IsValid => !Validate().Any();
 
@@ -48,7 +43,7 @@ public partial record Contract<T>()
         return _errors.AsReadOnly();
     }
 
-    public Expression PopExpression()
+    public Expression<T> PopExpression()
     {
         Debug.Assert(_expressions.Count >= 1);
 
@@ -57,7 +52,16 @@ public partial record Contract<T>()
         return last;
     }
 
-    public Contract<T> NewStatement(Statement statement)
+    public Statement PopStatement()
+    {
+        Debug.Assert(_statements.Count >= 1);
+
+        var last = _statements.Last();
+        _statements.RemoveAt(_statements.Count - 1);
+        return last;
+    }
+
+    public Contract<T> PushStatement(Statement statement)
     {
         _statements.Add(statement);
         return this;
@@ -70,10 +74,11 @@ public partial record Contract<T>()
         return contract;
     }
 
-    public Contract<T> IsPositive<V>(V value) where V : INumber<V>
+    public NumericExpression<T, TValue> Number<TValue>(TValue value) where TValue : INumber<TValue>
     {
-        NewStatement(new TrueStatement(V.IsPositive(value)));
-        return this;
+        var numerics = new NumericExpression<T, TValue>(value, this);
+        _expressions.Add(numerics);
+        return numerics;
     }
 
     public EmailExpression<T> IsEmail(string? value, Regex? regex = null, string key = "Email",
@@ -86,6 +91,6 @@ public partial record Contract<T>()
 
     public Contract<T> Or()
     {
-        return this;
+        return PushStatement(new OrStatement<T>(PopExpression()));
     }
 }

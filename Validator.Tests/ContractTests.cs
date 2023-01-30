@@ -3,6 +3,51 @@ namespace Validator.Tests;
 public class ContractTests
 {
     [Theory]
+    [InlineData(-100)]
+    [InlineData(-2324)]
+    [InlineData(-43425000)]
+    [InlineData(-1)]
+    [InlineData(-2)]
+    [InlineData(-4000)]
+    public void check_positive_or_negative_values(int value)
+    {
+        var validContract = new Contract<bool>();
+        validContract
+            .Number(value)
+            .IsPositive()
+            .Or()
+            .IsNegative();
+        Assert.True(validContract.IsValid);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(-2)]
+    [InlineData(-4000)]
+    public void check_invalid_positive_values(int value)
+    {
+        var validContract = new Contract<bool>();
+        validContract
+            .Number(value)
+            .IsPositive();
+        Assert.False(validContract.IsValid);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(4000)]
+    public void check_valid_positive_values(int value)
+    {
+        var validContract = new Contract<bool>();
+        validContract
+            .Number(value)
+            .IsPositive();
+        Assert.True(validContract.IsValid);
+    }
+
+    [Theory]
     [InlineData("djinn", 3, 15)]
     [InlineData("djinn", 4, 35)]
     [InlineData(null, 4, 35)]
